@@ -50,6 +50,8 @@ def start(sets, reps, secs, df_trainer_coords, df_trainers_costs):
             cap.isOpened()
             while reps_counter < reps:
                 ret, frame = cap.read()
+                if ret == False:
+                    break
                 height, width, _ = frame.shape
                 # Recolor image to RGB
                 image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -110,14 +112,14 @@ def start(sets, reps, secs, df_trainer_coords, df_trainers_costs):
                                     down = True
                                     stage = "down"
                         if up == True and down == True and angle >= 160:
-                                    # #funcion de Costos()
-                        #         # df_results_coords_total = UpcSystemCost.process(frame_rgb,mp_drawing,mp_pose,results,
-                        #         #                                                 counter,start,frames_sec,df_trainer_coords,
-                        #         #                                                 df_trainers_costs,df_results_coords_total,
-                        #         #                                                 sets_counter,reps_counter)
-                        #         # counter +=1
-                        #         # start +=1
-                        #         #inicio,c,results,resultados_acum=start_cost(inicio,c,results,resultados_acum)
+                                    # funcion de Costos()
+                                    df_results_coords_total = UpcSystemCost.process(image,mp_drawing,mp_pose,results,
+                                                                                counter,start,frames_sec,df_trainer_coords,
+                                                                                df_trainers_costs,df_results_coords_total,
+                                                                                sets_counter,reps_counter)
+                                    counter +=1
+                                    start +=1
+                                # inicio,c,results,resultados_acum=start_cost(inicio,c,results,resultados_acum)
                                     print(f'Paso')
                                     reps_counter += 1
                                     up = False
@@ -167,7 +169,14 @@ def start(sets, reps, secs, df_trainer_coords, df_trainers_costs):
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 2, cv2.LINE_AA)
                     
                     #cv2.imshow('Mediapipe Feed', image)
-                    stframe.image(image,channels = 'BGR',use_column_width=True)
+                    aux_image = np.zeros(frame.shape, np.uint8)
+                    cv2.line(aux_image, (x1, y1), (x2, y2), (255, 255, 0), 20)
+                    cv2.line(aux_image, (x2, y2), (x3, y3), (255, 255, 0), 20)
+                    cv2.line(aux_image, (x1, y1), (x3, y3), (255, 255, 0), 5)
+                    contours = np.array([[x1, y1], [x2, y2], [x3, y3]])
+                    cv2.fillPoly(aux_image, pts=[contours], color=(128, 0, 250))
+                    image = cv2.addWeighted(image, 1, aux_image, 0.8, 0)
+                    stframe.image(image,channels = 'BGR',use_column_width=True)   
 
                     # Used to end early
                     if cv2.waitKey(10) & 0xFF == ord('q'):
@@ -175,7 +184,8 @@ def start(sets, reps, secs, df_trainer_coords, df_trainers_costs):
 
                 except:
                     pass   
-            sets_counter += 1                
+            sets_counter += 1  
+                       
             if (sets_counter!=sets):
                 try:
                     cv2.putText(image, 'FINISHED SET', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,0,0), 3, cv2.LINE_AA)
@@ -189,10 +199,10 @@ def start(sets, reps, secs, df_trainer_coords, df_trainers_costs):
                     stframe.image(image,channels = 'BGR',use_column_width=True)
                     pass 
                            
-    cv2.rectangle(image, (50,180), (600,400), (0,255,0), -1)
+    cv2.rectangle(image, (50,180), (600,300), (0,255,0), -1)
     cv2.putText(image, 'FINISHED EXERCISE', (100,250), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
-    cv2.putText(image, 'REST FOR 30s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
-    #df_results_coords_total.to_csv("./resultados_costos/Squats_resultados_costos.csv",index=False)   
+    #cv2.putText(image, 'REST FOR 30s' , (155,350), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255,255,255), 3, cv2.LINE_AA)
+    df_results_coords_total.to_csv("./resultados_costos/Squats_resultados_costos.csv",index=False)   
     #cv2.imshow('Mediapipe Feed', image)
     stframe.image(image,channels = 'BGR',use_column_width=True)
     #cv2.waitKey(1) 
